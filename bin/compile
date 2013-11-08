@@ -7,10 +7,12 @@ CACHE_DIR=$2
 
 BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 
+source "${BIN_DIR}/../conf/${PAAS_VENDOR}-env.properties"
+
 # source in common functions
 . $BIN_DIR/common.sh
 
-curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack-common.tar.gz | tar xz
+curl --silent --location "${JVM_BUILDPACK_COMMON_URL}" | tar xz
 . bin/java
 
 if [ -f ${CACHE_DIR}/system.properties ] && [ ! -f ${BUILD_DIR}/system.properties ]; then
@@ -62,17 +64,17 @@ fi
 
 # Install Play! or update the version
 if [ ! -f $PLAY_PATH/play ]; then
-  install_play $PLAY_VERSION
+  install_play $PLAY_VERSION $PLAY_DIST_URL
 else
   INSTALLED_PLAY_VERSION=`cat $PLAY_PATH/framework/src/play/version`
   if [ "$INSTALLED_PLAY_VERSION" != "$PLAY_VERSION" ] && $VERSION_DECLARED ; then
     echo "-----> Updating Play! version. Previous version was $INSTALLED_PLAY_VERSION. Updating to $PLAY_VERSION..."
     rm -rf $PLAY_PATH
-    install_play $PLAY_VERSION
+    install_play $PLAY_VERSION $PLAY_DIST_URL
   fi
 fi
 
-PLAY_SETTINGS_URL="http://s3.amazonaws.com/heroku-jvm-langpack-play/ivysettings.xml"
+PLAY_SETTINGS_URL="$PLAY_DIST_URL/ivysettings.xml"
 
 echo -n "-----> Installing ivysettings.xml....."
 if [ -f .ivy2/ivysettings.xml ]; then

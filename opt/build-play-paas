@@ -32,7 +32,7 @@ fi
 
 # Clean old tarball
 cd $BUILD_DIR
-rm -fr build/play-heroku.tar.gz
+rm -fr build/play-paas.tar.gz
 
 # Create tmp space for tar'ing
 mkdir -p tmp/.play/framework/src/play
@@ -59,7 +59,7 @@ if [ ! -d build ]; then
   mkdir build
 fi
 
-tar cvzf build/play-heroku.tar.gz -C tmp/ .play
+tar cvzf build/play-paas.tar.gz -C tmp/ .play
 rm -fr tmp/
 
 if [[ -n $PLAY_FILE && -f $PLAY_FILE ]]; then
