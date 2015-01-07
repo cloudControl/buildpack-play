@@ -53,6 +53,13 @@ If you don't specify a version it will be defaulted for you and you'll see a war
 
 Once your application is live you can upgrade the Play! version simply by changing the version in your dependencies.yml. If you don't specify a version and use the default version your application will not be updated when the default version is updated. This is so that you don't have to deal with your application being upgraded unexpectedly.
 
+Customizing Ivy
+-----------
+
+You can customize the Ivy execution by creating a `.ivy2-overlay` directory in your project and adding it to Git.
+The contents of this directory will be copied over the default `.ivy2` directory.
+In this way, you can add files such as `.ivy2-overlay/ivysettings.xml` to customize the Ivy execution.
+
 Hacking
 -------
 

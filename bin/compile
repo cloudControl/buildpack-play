@@ -18,17 +18,17 @@ curl --silent --location "${JVM_BUILDPACK_COMMON_URL}" | tar xz
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
-# create default system.properties 
+# create default system.properties
 if [ ! -f ${BUILD_DIR}/system.properties ]; then
   echo "java.runtime.version=1.6" > ${BUILD_DIR}/system.properties
 fi
 
-# install JDK 
+# install JDK
 javaVersion=$(detect_java_version ${BUILD_DIR})
 echo -n "-----> Installing OpenJDK ${javaVersion}..."
 install_java ${BUILD_DIR} ${javaVersion}
 jdk_overlay ${BUILD_DIR}
-echo "done"
+echo " done"
 
 PLAY_PATH=".play"
 IVY_PATH=".ivy2"
@@ -43,6 +43,14 @@ for DIR in $PLAY_PATH $IVY_PATH ; do
     cp -r $CACHE_DIR/$DIR $DIR
   fi
 done
+
+# Install the custom Ivy settings
+if [ -d ${IVY_PATH}-overlay ]; then
+  echo -n "-----> Installing custom Ivy files..."
+  mkdir -p ${IVY_PATH}
+  mv ${IVY_PATH}-overlay/* ${IVY_PATH}
+  echo " done"
+fi
 
 PLAY_VERSION=$(get_play_version conf/dependencies.yml)
 DEFAULT_PLAY_VERSION="1.2.7"
@@ -66,15 +74,6 @@ else
   fi
 fi
 
-PLAY_SETTINGS_URL="$PLAY_DIST_URL/ivysettings.xml"
-
-echo -n "-----> Installing ivysettings.xml....."
-if [ -f .ivy2/ivysettings.xml ]; then
-  rm .ivy2/ivysettings.xml 
-fi
-curl --silent --max-time 10 --location $PLAY_SETTINGS_URL --create-dirs --output .ivy2/ivysettings.xml
-echo " done"
-
 # Build app
 echo "-----> Building Play! application..."
 $PLAY_PATH/play version | sed -u 's/^/       /'
@@ -89,7 +88,7 @@ eval "$DEPENDENCIES_CMD" | sed -u 's/^/       /'
 check_compile_status
 
 PRECOMPILE_CMD="$PLAY_PATH/play precompile $APP_DIR --silent 2>&1"
-echo "       Precompiling: $PRECOMPILE_CMD" 
+echo "       Precompiling: $PRECOMPILE_CMD"
 eval "$PRECOMPILE_CMD" | sed -u 's/^/       /'
 check_compile_status
 
@@ -102,7 +101,7 @@ done
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/play.sh"
 mkdir -p $(dirname $PROFILE_PATH)
-echo 'export PATH="/app/.jdk/bin:$PATH"' >> $PROFILE_PATH
+echo 'export PATH="/app/.play:/app/.jdk/bin:/app/.tools:$PATH"' >> $PROFILE_PATH
 
 # Remove build time dependencies from slug
 # (Note: runtime modules are copied to slug with --forceCopy option)
